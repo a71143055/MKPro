@@ -28,9 +28,26 @@
       <button id="send-btn" aria-label="Send message">✈️</button>
     </div>
     <footer>
-      <small>🔑 Replace <code>YOUR_GEMINI_API_KEY_HERE</code> in <code>script.js</code> with your Gemini API key.</small>
+      <small>🔑 Your API key is stored securely in the browser. Click the gear icon to change it.</small>
     </footer>
   </div>
+
+  <!-- API Key Modal -->
+  <div id="api-key-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>🔐 Gemini API Key</h2>
+      <p>Enter your Gemini API key to enable the chatbot. The key is saved in <code>localStorage</code> and never leaves your browser.</p>
+      <input type="password" id="api-key-input" placeholder="Paste your Gemini API key here" />
+      <div class="modal-actions">
+        <button id="save-key-btn" class="primary">Save</button>
+        <button id="close-key-btn" class="secondary">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Settings button -->
+  <button id="settings-btn" class="settings" aria-label="API key settings">⚙️</button>
+
   <script src="assets/script.js"></script>
 </body>
 </html>

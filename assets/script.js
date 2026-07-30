@@ -1,9 +1,51 @@
 // assets/script.js
-// Simple Gemini client – replace YOUR_GEMINI_API_KEY_HERE with your key.
-const API_KEY = "YOUR_GEMINI_API_KEY_HERE"; // <<< edit before publishing
+// Simple Gemini client – API key is stored in localStorage.
+let API_KEY = null; // will be loaded from localStorage
 const ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent";
 
+// Load API key from localStorage; if missing, show modal
+function loadApiKey() {
+  const stored = localStorage.getItem("gemini_api_key");
+  if (stored) {
+    API_KEY = stored;
+    return true;
+  }
+  // show modal to ask for key
+  openKeyModal();
+  return false;
+}
+
+function openKeyModal() {
+  document.getElementById("api-key-modal").classList.remove("hidden");
+  document.getElementById("api-key-input").focus();
+}
+
+function closeKeyModal() {
+  document.getElementById("api-key-modal").classList.add("hidden");
+}
+
+function saveApiKey() {
+  const key = document.getElementById("api-key-input").value.trim();
+  if (key) {
+    localStorage.setItem("gemini_api_key", key);
+    API_KEY = key;
+    closeKeyModal();
+  } else {
+    alert("API key cannot be empty.");
+  }
+}
+
+// Settings button opens modal
+document.getElementById("settings-btn").addEventListener("click", openKeyModal);
+// Modal action buttons
+document.getElementById("save-key-btn").addEventListener("click", saveApiKey);
+document.getElementById("close-key-btn").addEventListener("click", closeKeyModal);
+
 async function callGemini(prompt) {
+  if (!API_KEY) {
+    loadApiKey();
+    throw new Error("API Key required");
+  }
   const response = await fetch(`${ENDPOINT}?key=${API_KEY}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -53,3 +95,6 @@ document.getElementById("send-btn").addEventListener("click", handleSend);
 document.getElementById("user-input").addEventListener("keypress", e => {
   if (e.key === "Enter") handleSend();
 });
+
+// Initialize: try loading key; if not present modal will appear
+loadApiKey();

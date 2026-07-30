@@ -14,59 +14,93 @@ html, body {
   overflow: hidden;
 }
 
-/* Container */
-#chat-container {
-  position: absolute;
-  inset: 0;
+/* Main container */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 1rem;
-  gap: 0.8rem;
+  padding: 2rem 1rem;
+  gap: 1rem;
 }
 
-/* Chat messages */
+header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.2rem;
+}
+header .subtitle {
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+/* Chat window */
+.chat-window {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* Message bubbles */
 .message {
   max-width: 85%;
   padding: 0.75rem 1rem;
-  border-radius: 1rem;
+  border-radius: 1.2rem;
   backdrop-filter: blur(12px);
-  background: rgba(255,255,255,0.07);
-  box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  background: rgba(255, 255, 255, 0.07);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   line-height: 1.4;
   font-size: 1rem;
   word-break: break-word;
+  position: relative;
 }
-
 .message.user {
   align-self: flex-end;
-  background: rgba(0,120,215,0.15);
+  background: rgba(0, 120, 215, 0.15);
 }
-
 .message.bot {
   align-self: flex-start;
 }
+.message.typed::after {
+  content: '';
+  display: inline-block;
+  width: 0.8rem;
+  height: 1rem;
+  background: url('data:image/svg+xml;utf8,<svg fill="%23fff" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M12 0C5.371 0 0 5.371 0 12c0 6.629 5.371 12 12 12s12-5.371 12-12C24 5.371 18.629 0 12 0zm0 22.5c-5.799 0-10.5-4.701-10.5-10.5S6.201 1.5 12 1.5 22.5 6.201 22.5 12 17.799 22.5 12 22.5z"/></svg>') no-repeat center;
+  background-size: contain;
+  animation: blink 1s steps(2, start) infinite;
+}
+@keyframes blink { to { opacity: 0; } }
 
 /* Input area */
-#input-area {
-  width: 100%;
-  max-width: 720px;
+.input-area {
   display: flex;
   gap: 0.5rem;
+  max-width: 800px;
+  margin: 0 auto;
 }
-
 #user-input {
   flex: 1;
-  padding: 0.75rem 1rem;
+  padding: 0.8rem 1rem;
   border: none;
   border-radius: 0.75rem;
-  background: rgba(255,255,255,0.09);
+  background: rgba(255, 255, 255, 0.09);
   color: inherit;
   font-size: 1rem;
   backdrop-filter: blur(6px);
+  transition: background 0.2s ease;
 }
-
+#user-input:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.12);
+}
 #send-btn {
   padding: 0 1.2rem;
   border: none;
@@ -77,30 +111,28 @@ html, body {
   cursor: pointer;
   transition: background 0.2s ease;
 }
-
 #send-btn:hover {
   background: hsl(210, 70%, 45%);
 }
 
-/* Typing animation */
-@keyframes typing {
-  from { width: 0; }
-  to { width: 100%; }
+/* Settings button */
+.settings {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #fff;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+.settings:hover {
+  transform: rotate(20deg);
+  color: hsl(210, 70%, 70%);
 }
 
-.bot .typing {
-  border-right: 2px solid currentColor;
-  animation: typing 1s steps(20, end) infinite;
-}
-
-/* Responsive */
-@media (max-width: 600px) {
-  .message { max-width: 95%; }
-  #input-area { flex-direction: column; }
-  #send-btn { width: 100%; }
-}
-
-/* Modal styling */
+/* Modal */
 .modal {
   position: fixed;
   inset: 0;
@@ -109,9 +141,13 @@ html, body {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
-.modal.hidden {
-  display: none;
+.modal:not(.hidden) {
+  opacity: 1;
+  pointer-events: all;
 }
 .modal-content {
   background: rgba(255, 255, 255, 0.1);
@@ -121,6 +157,9 @@ html, body {
   width: 90%;
   max-width: 400px;
   color: #fff;
+}
+.modal-content h2 {
+  margin-bottom: 0.5rem;
 }
 .modal-content input {
   width: 100%;
@@ -147,15 +186,21 @@ html, body {
 .modal-actions button.secondary {
   background: hsl(210, 30%, 40%);
 }
-/* Settings button */
-.settings {
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background: transparent;
-  border: none;
-  font-size: 1.5rem;
-  cursor: pointer;
-  color: #fff;
+
+/* Responsive */
+@media (max-width: 600px) {
+  .container {
+    padding: 1rem 0.5rem;
+  }
+  .chat-window {
+    padding: 0.5rem;
+  }
+  #send-btn {
+    width: 100%;
+  }
+  .input-area {
+    flex-direction: column;
+  }
 }
+
 

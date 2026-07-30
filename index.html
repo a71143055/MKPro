@@ -1,16 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>✨ AI ChatBot – Gemini Demo</title>
-  <meta name="description" content="A premium static chatbot powered by Google Gemini, hosted on GitHub Pages." />
+  <meta name="description" content="A premium static chatbot powered by Google Gemini with User Authentication and API Key Integration." />
   <!-- Open Graph for rich sharing -->
   <meta property="og:title" content="AI ChatBot – Gemini Demo" />
-  <meta property="og:description" content="Interact with a sleek AI chat interface that uses the Gemini model, all from a static GitHub Pages site." />
+  <meta property="og:description" content="Interact with a sleek AI chat interface that uses the Gemini model with user accounts and API Key binding." />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://YOUR_USERNAME.github.io/YOUR_REPO/" />
-  <meta property="og:image" content="https://YOUR_USERNAME.github.io/YOUR_REPO/assets/mockup.png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -18,36 +16,105 @@
 </head>
 <body>
   <div class="container">
-    <header>
-      <h1>🤖 Gemini ChatBot</h1>
-      <p class="subtitle">Ask anything – the AI will answer with natural language.</p>
+    <header class="app-header">
+      <div class="header-main">
+        <h1>🤖 Gemini ChatBot</h1>
+        <p class="subtitle">Ask anything – Powered by Google Gemini</p>
+      </div>
+      <!-- User Auth Bar -->
+      <div id="auth-bar" class="auth-bar">
+        <div id="user-info" class="user-info hidden">
+          <span id="username-display" class="user-badge">👤 Guest</span>
+          <button id="key-settings-btn" class="icon-btn" title="API Key Settings">🔑 API Key</button>
+          <button id="logout-btn" class="secondary-btn">로그아웃</button>
+        </div>
+        <div id="guest-info" class="guest-info">
+          <button id="open-auth-btn" class="primary-btn">로그인 / 회원가입</button>
+        </div>
+      </div>
     </header>
+
     <section id="chat" class="chat-window"></section>
+
     <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your question…" autocomplete="off" />
-      <button id="send-btn" aria-label="Send message">✈️</button>
+      <input type="text" id="user-input" placeholder="로그인 후 메시지를 입력하세요..." autocomplete="off" disabled />
+      <button id="send-btn" aria-label="Send message" disabled>✈️</button>
     </div>
+
     <footer>
-      <small>🔑 Your API key is stored securely in the browser. Click the gear icon to change it.</small>
+      <small id="footer-status-text">🔒 서비스를 이용하려면 먼저 로그인하고 Gemini API Key를 등록하세요.</small>
     </footer>
   </div>
 
-  <!-- API Key Modal -->
+  <!-- Auth Modal (Login / Signup) -->
+  <div id="auth-modal" class="modal hidden">
+    <div class="modal-content auth-modal-content">
+      <div class="auth-tabs">
+        <button id="tab-login" class="tab-btn active">로그인</button>
+        <button id="tab-signup" class="tab-btn">회원가입</button>
+      </div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form">
+        <h2>🔑 로그인</h2>
+        <div class="form-group">
+          <label for="login-username">아이디</label>
+          <input type="text" id="login-username" placeholder="아이디 입력" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="login-password">비밀번호</label>
+          <input type="password" id="login-password" placeholder="비밀번호 입력" required autocomplete="current-password" />
+        </div>
+        <div id="login-error" class="form-error hidden"></div>
+        <div class="modal-actions">
+          <button type="submit" class="primary">로그인</button>
+          <button type="button" class="close-auth-btn secondary">취소</button>
+        </div>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" class="auth-form hidden">
+        <h2>✨ 회원가입</h2>
+        <div class="form-group">
+          <label for="signup-username">아이디</label>
+          <input type="text" id="signup-username" placeholder="영문/숫자 아이디" required autocomplete="username" />
+        </div>
+        <div class="form-group">
+          <label for="signup-password">비밀번호</label>
+          <input type="password" id="signup-password" placeholder="비밀번호 (4자 이상)" required autocomplete="new-password" />
+        </div>
+        <div class="form-group">
+          <label for="signup-key">Gemini API Key (선택)</label>
+          <input type="password" id="signup-key" placeholder="AI Studio에서 발급받은 Gemini API 키" />
+        </div>
+        <div id="signup-error" class="form-error hidden"></div>
+        <div class="modal-actions">
+          <button type="submit" class="primary">회원가입</button>
+          <button type="button" class="close-auth-btn secondary">취소</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- API Key Settings Modal -->
   <div id="api-key-modal" class="modal hidden">
     <div class="modal-content">
-      <h2>🔐 Gemini API Key</h2>
-      <p>Enter your Gemini API key to enable the chatbot. The key is saved in <code>localStorage</code> and never leaves your browser.</p>
-      <input type="password" id="api-key-input" placeholder="Paste your Gemini API key here" />
+      <h2>🔐 Gemini API Key 연동</h2>
+      <p><strong id="key-modal-username"></strong> 계정에 연결될 Gemini API Key를 입력하세요.</p>
+      <div class="form-group">
+        <input type="password" id="api-key-input" placeholder="AI Studio API Key (AIzaSy...)" />
+      </div>
+      <p class="help-text">API 키는 브라우저의 localStorage에 사용자의 계정과 안전하게 연동되어 저장됩니다.</p>
+      <div id="key-status-msg" class="form-status"></div>
       <div class="modal-actions">
-        <button id="save-key-btn" class="primary">Save</button>
-        <button id="close-key-btn" class="secondary">Cancel</button>
+        <button id="save-key-btn" class="primary">저장</button>
+        <button id="remove-key-btn" class="danger">삭제</button>
+        <button id="close-key-btn" class="secondary">닫기</button>
       </div>
     </div>
   </div>
 
-  <!-- Settings button -->
-  <button id="settings-btn" class="settings" aria-label="API key settings">⚙️</button>
-
   <script src="assets/script.js"></script>
 </body>
 </html>
+
